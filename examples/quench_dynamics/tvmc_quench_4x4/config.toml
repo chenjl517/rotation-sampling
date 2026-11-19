@@ -1,0 +1,22 @@
+[sampling]
+seed = 42
+n_samples = 40960
+n_chains = 4096
+machine_pow = 2
+p_exchange = 0.8
+
+[tvmc]
+dt = 0.01
+diag_shift = 1e-8
+kernel = "qgt"
+rot_sweeps = 100
+std_sweeps = 100
+
+[helper]
+sz = 2.0
+coeff = 0.1
+
+[io]
+output_dir = "results"
+ckpt_dir = "ckpts"
+run_tag = ""

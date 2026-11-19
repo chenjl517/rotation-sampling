@@ -1,0 +1,53 @@
+[lattice]
+lx = 8
+ly = 1
+pbc = true
+
+[hamiltonian]
+J = 1.0
+h = 1.0
+
+[ansatz]
+rbm_alpha = 4
+projector_units = 2
+perturb = 1e-3
+perturb_dead = 1e-3
+
+[rotation]
+site = [0, 0]
+
+[sampling]
+seed = 42
+n_samples = 40960
+n_chains = 8192
+machine_pow = 2
+
+[tvmc]
+dt = 1e-4
+kernel = "qgt"
+solver = "cholesky"
+diag_shift = 1e-6
+rtol = 1e-14
+rtol_smooth = 1e-10
+rot_sweeps = 20000
+std_sweeps = 20000
+e_gs_shift = true
+integrator = "rk45"
+rk45_rtol = 1e-4
+rk45_atol = 1e-8
+dt_min = 1e-5
+dt_max = 1e-2
+t_max = 2.0
+sample_policy = "cached"
+rk45_norm = "l2"
+max_steps = 100000
+
+[ed]
+dt = 0.001
+t_max = 2.0
+
+[io]
+output_dir = "results"
+ckpt_dir = "ckpts"
+ed_dir = "ed_reference"
+run_tag = ""

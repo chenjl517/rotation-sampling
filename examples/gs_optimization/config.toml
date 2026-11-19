@@ -1,0 +1,38 @@
+[lattice]
+lx = 4
+ly = 4
+pbc = true
+
+[hamiltonian]
+j1 = 1.0
+j2 = 0.5
+
+[ansatz]
+total_sz = 0.0
+init_stddev = 0.5
+
+[sampling]
+seed = 42
+n_samples = 4096
+n_chains = 4096
+n_discard = 1
+thin_coeff = 1
+
+[optimization]
+lr = 0.05
+diag_shift = 0.005
+solver = "cholesky"
+grad_clip = 100.0
+std_sweeps = 5000
+rot_sweeps = 4000
+
+[rotation]
+init_sweep = 1000
+seed = 42
+
+[io]
+ckpt_dir = "ckpts"
+output_dir = "results"
+ed_dir = "ed_reference"
+ckpt_every = 100
+run_tag = ""

@@ -1,0 +1,21 @@
+[lattice]
+lx = 4
+ly = 4
+pbc = true
+
+[hamiltonian]
+j1 = -1.0
+j2 = 0.0
+delta = 0.0
+
+[quench]
+exci_pos = 0
+total_sz_post = 1.0
+
+[ansatz]
+rbm_alpha = 1
+rbm_bias = false
+
+[io]
+ckpt_dir = "ckpts"
+ed_dir = "ed_reference"

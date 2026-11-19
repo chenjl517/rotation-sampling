@@ -1,0 +1,26 @@
+[sampling]
+seed = 42
+n_samples = 4096
+n_chains = 4096
+machine_pow = 2
+
+[tvmc]
+dt = 0.01
+rot_sweeps = 100
+std_sweeps = 100
+
+[ptvmc]
+solver = "LPE3"             
+n_iter = 50
+lr = 0.05
+diag_shift = 1e-8
+autotune = true
+autotune_target = 0.9
+diag_shift_min = 1e-11
+diag_shift_max = 0.1
+sample_uphi = false
+
+[io]
+output_dir = "results"
+ckpt_dir = "ckpts"
+run_tag = ""

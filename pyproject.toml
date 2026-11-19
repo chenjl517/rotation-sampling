@@ -1,0 +1,28 @@
+[project]
+name = "rotation-sampling"
+version = "0.1.0"
+description = "Local-rotation VMC / tVMC on top of NetKet (arXiv:2606.23657)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "netket==3.21.0",
+    "jax==0.8.2",
+    "jaxlib==0.8.2",
+    "flax==0.12.2",
+    "optax==0.2.8",
+    "numpy==2.4.4",
+    "scipy==1.17.1",
+    "numba==0.65.0",
+    "matplotlib==3.10.8",
+]
+
+[project.optional-dependencies]
+ptvmc = ["netket-ptvmc"]
+gpu = ["jax[cuda12]==0.8.2"]
+
+[tool.uv]
+package = false
+override-dependencies = ["netket==3.21.0"]
+
+[tool.uv.sources]
+netket-ptvmc = { git = "https://github.com/NeuralQXLab/ptvmc-systematic-study", rev = "dc32c3fe512ae186d36fe5680d0ba21d264788b4" }
