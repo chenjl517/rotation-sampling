@@ -1,18 +1,15 @@
 # Rotation sampling
 
-Local-rotation VMC / tVMC on top of [NetKet](https://www.netket.org): the variational state is
-sampled in a locally rotated basis, `ψ → U†ψ` with a 2x2 (one site) or 4x4 (one bond) unitary `U`, and
-the Hamiltonian is rotated accordingly, `H → U†HU`. Expectation values are unchanged, but the sampled
-distribution now has support where the plain ansatz has none, which removes the sampling pathologies
-of stochastic reconfiguration and tVMC discussed in our paper
-([arXiv:2606.23657](https://arxiv.org/abs/2606.23657), see [Citation](#citation)).
+Official implementation of **rotation sampling** built on top of [NetKet](https://www.netket.org), accompanying the preprint [arXiv:2606.23657](https://arxiv.org/abs/2606.23657).
+
+Monte Carlo methods for quantum many-body simulation become biased whenever sampling misses zero-amplitude configurations that still drive the evolution—a pathology known as **support mismatch**. 
+
+Rotation sampling provides a sampling-level plug-in: applying unitary basis transformations to recover the missing support.
+
+This repository provides ready-to-run demos demonstrating rotation sampling across **time-dependent VMC (tVMC)**, **projected tVMC (p-tVMC)**, and **ground-state stochastic reconfiguration (SR)**.
+
 
 ## Installation
-
-The environment is locked with [uv](https://docs.astral.sh/uv/): `pyproject.toml` pins the direct
-dependencies (the versions the results in this repository were produced with, Python 3.12) and
-`uv.lock` every transitive package, so one command recreates the same environment:
-
 ```bash
 git clone git@github.com:chenjl517/rotation-sampling.git
 cd rotation-sampling
@@ -22,31 +19,23 @@ uv sync --extra ptvmc        # + ptvmc-systematic-study (p-tVMC demos), fixed co
 uv run python examples/parity_mixing/run_rot.py     # or: source .venv/bin/activate
 ```
 
-The package `local_rot_vmc/` is used in place; the example scripts add the repository root to
-`sys.path`, so no further installation step is needed.
-
 ## Examples
 
-Every example is a pair `run_std.py` (standard method) / `run_rot.py` (with local rotation) reading a
-`config.toml` next to the scripts. Common options: `--gpu N` (sets `CUDA_VISIBLE_DEVICES` before JAX
-starts) and `--config PATH`. Results go to `results/history_*.npz`, checkpoints to `ckpts/`.
-`examples/plot.ipynb` plots every example against exact diagonalisation (blue = std, red = rot,
-black = exact).
+Each benchmark pairs run_std.py (standard) with run_rot.py (rotation sampling) using a local config.toml.
 
-### 1. Charged local-operator quench (`quench_dynamics/`)
+### 1. Local quench (`quench_dynamics/`)
 
-Local quench `S+_0 |GS⟩` on the 4x4 PBC J1-J2 XXZ model with an RBM ansatz.
+Local quench $S^+_0 | GS\rangle$ on the 4×4 periodic XY model with an RBM ansatz. Applying $S_0^+$ zeros out all configurations with a down spin at site 0, creating support mismatch that freezes standard sampling.
 
-Model and ansatz are shared in `config_model.toml`; each sub-directory has its own algorithm `config.toml`.
+#### Initial state preparation
 Prepare the RBM ground state and the exact reference once:
-
 ```bash
 cd examples/quench_dynamics
-python generate_initial_state_gs.py           # fit RBM_gs to the ED ground state → ckpts/
+python generate_initial_state_gs.py           # prepare RBM_gs
 python ed_dynamics_heisen.py                  # exact ⟨Sz_i⟩(t) → ed_reference/
 ```
 
-#### tVMC (`tvmc_quench_4x4/`, 1-site Hadamard rotation)
+#### tVMC (`tvmc_quench_4x4/`)
 
 ```bash
 cd tvmc_quench_4x4
@@ -54,11 +43,9 @@ python run_std.py --gpu 0
 python run_rot.py --gpu 0
 ```
 
-⟨Sz⟩ on the quenched site. Plain tVMC never leaves the initial configuration of that site.
-
 <p align="center"><img src="_imgs/quench_tvmc.png" alt="quench, tVMC" width="40%"></p>
 
-#### p-tVMC (`ptvmc_quench_4x4/`, 2-site Hadamard rotation)
+#### p-tVMC (`ptvmc_quench_4x4/`)
 
 ```bash
 cd ptvmc_quench_4x4
@@ -66,18 +53,14 @@ python run_std.py --gpu 0
 python run_rot.py --gpu 0
 ```
 
-⟨Sz⟩ on the quenched site and its neighbour, final infidelity of every time step, and the inner
-optimisation of the first step.
-
 <p align="center"><img src="_imgs/quench_ptvmc.png" alt="quench, p-tVMC" width="80%"></p>
 
-### 2. Other applications
 
-#### Parity mixing (`parity_mixing/`, 8-site TFIM chain, RBM)
+### 2. Parity mixing (`parity_mixing/`)
 
-Benchmark of Wan, Wiersema & Zhang ([arXiv:2603.18148](https://arxiv.org/abs/2603.18148), Fig. 5a):
-the even-parity state `|ψ_even⟩` is encoded exactly in an RBM and evolved under the TFIM.
-Plain tVMC never samples the odd sector and `P_Z` stays frozen; the 1-site rotation fixes it.
+Real-time evolution of an 8-site periodic transverse-field Ising (TFI) chain initialized in an equal-weight superposition of all even-parity states |ψ_even⟩ (encoded exactly in an RBM), following [arXiv:2603.18148](https://arxiv.org/abs/2603.18148). 
+
+Standard tVMC fails to sample the odd-parity sector and freezes at $\langle P_Z \rangle = 1$. Here we show that a single-site Hadamard rotation restores full support and recovers the dynamics.
 
 ```bash
 cd examples/parity_mixing
@@ -87,11 +70,12 @@ python run_std.py --gpu 0
 python run_rot.py --gpu 0
 ```
 
-`P_Z(t)`; plain tVMC (blue, drawn to t = 0.01) stays at `P_Z = 1`.
-
 <p align="center"><img src="_imgs/parity_mixing.png" alt="parity mixing" width="40%"></p>
 
-#### Ground-state optimization (`gs_optimization/`, 4x4 J1-J2 Heisenberg, lookup ansatz)
+### 3. Ground-state optimization (`gs_optimization/`)
+Ground-state optimization of the frustrated 4×4 periodic J₁-J₂ Heisenberg model at J₂/J₁ = 0.5 (lookup-table ansatz). 
+
+Changing the sign of a real amplitude requires passing through zero, where the configuration becomes rarely or never sampled, trapping standard SR in an optimization plateau. Switching to rot-SR at sweep 1000 restores sampling access and recovers the exact ground-state energy and sign structure.
 
 ```bash
 cd examples/gs_optimization
@@ -106,6 +90,8 @@ Energy per sweep (left) and relative error to ED (right); rot-SR starts from the
 <p align="center"><img src="_imgs/gs_optimization.png" alt="ground-state optimisation" width="80%"></p>
 
 ## Citation
+
+If you find this code useful in your research, please consider citing our preprint:
 
 ```bibtex
 @misc{chen2026resolvingsupportmismatchlocalbasis,
